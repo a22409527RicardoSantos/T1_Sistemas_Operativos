@@ -23,16 +23,35 @@
 // Funcao recebe current_time_ms que é o tempo atual do sistema (nao relevante para o FIFO)
 // Recebe a lista de processos (Fila)
 // Recebe o processo que esta a ser executado ou null
-void fifo_scheduler(uint32_t current_time_ms, queue_t *rq, pcb_t **cpu_task) {
+
+const uint32_t SLICE_MS = 500;
+#define NUM_QUEUES 7;
+
+void mlfq_scheduler(uint32_t current_time_ms, queue_t *rqset, pcb_t **cpu_task) {
+
     // Se existe um processo a correr (cpu_task != null)
     if (*cpu_task) {
 
-        // O tempo de execuçao do processo é o seu tempo anterior mais o tempo que passou
+      // Atualizo timers
         (*cpu_task)->ellapsed_time_ms += TICKS_MS;
+        (*cpu_task)->slice_start_ms   += TICKS_MS;
 
-        // Se o tempo que o processo executou (ellapsed_time_ms) é >= ao tempo que precisava (time_ms)
-        // -> o processo terminou
-        if ((*cpu_task)->ellapsed_time_ms >= (*cpu_task)->time_ms) {
+        // Se processo esgotou o timeSlice e nao terminou
+        if ((*cpu_task)->slice_start_ms >= SLICE_MS && !((*cpu_task)->ellapsed_time_ms >= (*cpu_task)->time_ms)) {
+
+          // Reseta time_slice
+            (*cpu_task)->slice_start_ms = 0;
+
+          /// Baixo a sua prioridade
+          // Ou seja passo-o para outra lista de prioridade menor
+
+            // Posso libertar o processo porque ja guardei numa queue
+            (*cpu_task) = NULL;
+
+            // Se processo terminou antes do timeSlice
+        } else if ((*cpu_task)->ellapsed_time_ms >= (*cpu_task)->time_ms) {
+            // Posso resetar o time_slice
+            (*cpu_task)->slice_start_ms = 0;
 
             // Crio mensagem para avisar que o processo terminou.
             msg_t msg = {
@@ -52,7 +71,6 @@ void fifo_scheduler(uint32_t current_time_ms, queue_t *rq, pcb_t **cpu_task) {
 
     // Se nao existe processo a correr (cpu livre)
     if (*cpu_task == NULL) {
-      // O proximo a executar é o primeiro da fila (head) (dequeue - retirado da lista)
-        *cpu_task = dequeue_pcb(rq);
+      /// Escolho o primeiro processo na lista de maior prioridade
     }
 }
