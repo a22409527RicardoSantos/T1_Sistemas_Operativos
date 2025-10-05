@@ -10,6 +10,8 @@ typedef enum  {
     TASK_TERMINATED,    // Task has been terminated and will be removed
 } task_status_en;
 
+
+
 // Define the Process Control Block (PCB) structure
 typedef struct pcb_st{
     int32_t pid;                   // Process ID
@@ -19,7 +21,14 @@ typedef struct pcb_st{
     uint32_t slice_start_ms;       // Time when the current time slice started
     uint32_t sockfd;               // Socket file descriptor for communication with the application
     uint32_t last_update_time_ms;  // Last time the PCB was updataed
+    int priority;         // Nivel de prioridade do processo
 } pcb_t;
+
+void decrease_priority(pcb_t *task);
+void increase_priority(pcb_t *task);
+void set_max_priority(pcb_t *task);
+
+
 
 // Define singly linked list elements
 typedef struct queue_elem_st queue_elem_t;

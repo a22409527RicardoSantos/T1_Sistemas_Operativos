@@ -2,6 +2,21 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "config.h"
+
+void decrease_priority(pcb_t *task) {
+    if (task->priority < MIN_PRIORITY) {
+        task->priority += 1;
+    }
+}
+void increase_priority(pcb_t *task) {
+    if (task->priority > 0) {
+        task->priority -= 1;
+    }
+}
+void set_max_priority(pcb_t *task) {
+    task->priority = 0;
+}
 
 pcb_t *new_pcb(pid_t pid, uint32_t sockfd, uint32_t time_ms) {
     pcb_t * new_task = malloc(sizeof(pcb_t));

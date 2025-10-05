@@ -5,6 +5,7 @@
 
 #include "msg.h"
 #include <unistd.h>
+#include "config.h"
 
 /**
  * @brief First-In-First-Out (FIFO) scheduling algorithm.
@@ -24,7 +25,6 @@
 // Recebe a lista de processos (Fila)
 // Recebe o processo que esta a ser executado ou null
 
-const uint32_t SLICE_MS = 500;
 
 void rr_scheduler(uint32_t current_time_ms, queue_t *rq, pcb_t **cpu_task) {
     // Se existe um processo a correr (cpu_task != null)
@@ -56,6 +56,7 @@ void rr_scheduler(uint32_t current_time_ms, queue_t *rq, pcb_t **cpu_task) {
 
             // Se nao terminou mas ja acabou o tempo do slice
         } else if ((*cpu_task)->slice_start_ms >= SLICE_MS) {
+
             // Reseto time slice
             (*cpu_task)->slice_start_ms = 0;
             // Coloco no fim da fila
@@ -69,5 +70,6 @@ void rr_scheduler(uint32_t current_time_ms, queue_t *rq, pcb_t **cpu_task) {
     if (*cpu_task == NULL) {
       // O proximo a executar é o primeiro da fila (head) (dequeue - retirado da lista)
         *cpu_task = dequeue_pcb(rq);
+        if (*cpu_task) (*cpu_task)->slice_start_ms = 0;
     }
 }

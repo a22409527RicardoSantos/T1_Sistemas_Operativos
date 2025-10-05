@@ -1,4 +1,3 @@
-
 ./app A 5 &
 ./app B 10 &
 ./app C 4 &
