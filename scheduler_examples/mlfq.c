@@ -111,7 +111,7 @@ void mlfq_scheduler(uint32_t current_time_ms, queue_t *rq, queue_t *bq, pcb_t **
 
 
             // Se esgotou o quantum
-        } else if ((*cpu_task)->slice_start_ms >= SLICE_MS) {
+        } else if ((*cpu_task)->slice_start_ms >= prio_quantum((*cpu_task)->priority)) {
             // Reseto time slice
             (*cpu_task)->slice_start_ms = 0;
             // Baixo a prioridade
