@@ -5,6 +5,7 @@
 
 #include "msg.h"
 #include <unistd.h>
+#include "debug.h"
 
 /**
  * @brief First-In-First-Out (FIFO) scheduling algorithm.
@@ -20,12 +21,17 @@
  *                 to point to the next task to run.
  */
 
-// Funcao recebe current_time_ms que é o tempo atual do sistema (nao relevante para o FIFO)
+// Funcao recebe current_time_ms que é o tempo
+// atual do sistema (nao relevante para o FIFO)
 // Recebe a lista de processos (Fila)
 // Recebe o processo que esta a ser executado ou null
 void fifo_scheduler(uint32_t current_time_ms, queue_t *rq, pcb_t **cpu_task) {
     // Se existe um processo a correr (cpu_task != null)
     if (*cpu_task) {
+
+        if ((*cpu_task)->ellapsed_time_ms == 0) {
+            printf("Started at %d ms\n",(int)current_time_ms);
+        }
 
         // O tempo de execuçao do processo é o seu tempo anterior mais o tempo que passou
         (*cpu_task)->ellapsed_time_ms += TICKS_MS;

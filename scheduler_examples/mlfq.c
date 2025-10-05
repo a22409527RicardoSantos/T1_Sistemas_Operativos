@@ -78,12 +78,17 @@ pcb_t* dequeue_higher_priority_elem(queue_t *rq) {
 }
 
 
-void mlfq_scheduler(uint32_t current_time_ms, queue_t *rq, queue_t *bq, pcb_t **cpu_task) {
+void mlfq_scheduler(uint32_t current_time_ms, queue_t *rq, pcb_t **cpu_task) {
     // Incremento contador MLFQ_PRIORITY_BOOST_MS
     priority_boost_counter += TICKS_MS;
 
     // Se existe um processo a correr
     if (*cpu_task) {
+
+        if ((*cpu_task)->ellapsed_time_ms == 0) {
+            printf("Started at %d ms\n",(int)current_time_ms);
+        }
+
         // O tempo de execuçao do processo é o seu tempo anterior mais o tempo que passou
         (*cpu_task)->ellapsed_time_ms += TICKS_MS;
         // Atualizo o tempo passado do time
@@ -143,5 +148,4 @@ void mlfq_scheduler(uint32_t current_time_ms, queue_t *rq, queue_t *bq, pcb_t **
             *cpu_task = next;
         }
     }
-
 }

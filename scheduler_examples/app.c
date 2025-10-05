@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
 
     // Received ACK
     uint32_t start_time_ms = msg.time_ms;
-//    printf("Application %s (PID %d) started running at time %d ms\n", app_name, pid, start_time_ms);
+    printf("Application %s (PID %d) started running at time %d ms\n", app_name, pid, start_time_ms);
 
     // Wait for the EXIT message
     if (read(sockfd, &msg, sizeof(msg_t)) != sizeof(msg_t)) {
