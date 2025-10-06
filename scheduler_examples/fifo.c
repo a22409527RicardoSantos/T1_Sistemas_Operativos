@@ -7,26 +7,9 @@
 #include <unistd.h>
 #include "debug.h"
 
-/**
- * @brief First-In-First-Out (FIFO) scheduling algorithm.
- *
- * This function implements the FIFO scheduling algorithm. If the CPU is not idle it
- * checks if the application is ready and frees the CPU.
- * If the CPU is idle, it selects the next task to run based on the order they were added
- * to the ready queue. The task that has been in the queue the longest is selected to run next.
- *
- * @param current_time_ms The current time in milliseconds.
- * @param rq Pointer to the ready queue containing tasks that are ready to run.
- * @param cpu_task Double pointer to the currently running task. This will be updated
- *                 to point to the next task to run.
- */
-
-// Funcao recebe current_time_ms que é o tempo
-// atual do sistema (nao relevante para o FIFO)
-// Recebe a lista de processos (Fila)
-// Recebe o processo que esta a ser executado ou null
 void fifo_scheduler(uint32_t current_time_ms, queue_t *rq, pcb_t **cpu_task) {
-    // Se existe um processo a correr (cpu_task != null)
+
+    // Se existe um processo a correr
     if (*cpu_task) {
 
         if ((*cpu_task)->ellapsed_time_ms == 0) {
@@ -36,11 +19,10 @@ void fifo_scheduler(uint32_t current_time_ms, queue_t *rq, pcb_t **cpu_task) {
         // O tempo de execuçao do processo é o seu tempo anterior mais o tempo que passou
         (*cpu_task)->ellapsed_time_ms += TICKS_MS;
 
-        // Se o tempo que o processo executou (ellapsed_time_ms) é >= ao tempo que precisava (time_ms)
-        // -> o processo terminou
+        // Se o processo terminou
         if ((*cpu_task)->ellapsed_time_ms >= (*cpu_task)->time_ms) {
 
-            // Crio mensagem para avisar que o processo terminou.
+            // Mensagem
             msg_t msg = {
                 .pid = (*cpu_task)->pid,
                 .request = PROCESS_REQUEST_DONE,
@@ -50,15 +32,15 @@ void fifo_scheduler(uint32_t current_time_ms, queue_t *rq, pcb_t **cpu_task) {
                 perror("write");
             }
 
-            // Posso libertar o processo porque já terminou
+            // Apago o processo, que terminou e cpu fica sem processo
             free((*cpu_task));
             (*cpu_task) = NULL;
         }
     }
 
-    // Se nao existe processo a correr (cpu livre)
+    // Se nao existe processo no cpu
     if (*cpu_task == NULL) {
-      // O proximo a executar é o primeiro da fila (head) (dequeue - retirado da lista)
+      // O proximo a executar é o primeiro da fila, dequeue do que está no head
         *cpu_task = dequeue_pcb(rq);
     }
 }

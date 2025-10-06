@@ -9,10 +9,6 @@
 
 
 
-// Funcao recebe current_time_ms que é o tempo atual do sistema (nao relevante para o FIFO)
-// Recebe a lista de processos (Fila)
-// Recebe o processo que esta a ser executado ou null
-
 uint32_t priority_boost_counter = 0;
 
 void priority_boost(queue_t *rq) {
@@ -28,7 +24,6 @@ void priority_boost(queue_t *rq) {
 }
 
 int exists_higher_prio_task(pcb_t *running_task, queue_t *rq) {
-    // Verifica se a lista é nula ou vazia
     if (!rq || !rq->head || !running_task) return 0;
 
     queue_elem_t *it = rq->head;

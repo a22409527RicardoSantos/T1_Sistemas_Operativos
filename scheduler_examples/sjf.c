@@ -5,15 +5,17 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+// Devolvo tempo que falta para o processo p terminar
 uint32_t remaining_ms(const pcb_t *p) {
-    if (p->time_ms > p->ellapsed_time_ms)
+    if (p->time_ms > p->ellapsed_time_ms) {
         return p->time_ms - p->ellapsed_time_ms;
-    else
+    }
         return 0;
 }
 
+// Devolvo o processo que demora menos tempo
 pcb_t* dequeue_shortest_remaining(queue_t *q) {
-  // Se a lista é null ou está vazia
+  // Se a lista esta null ou vazia
     if (!q || !q->head) return NULL;
 
     // O elemento atual e o que tem menor tempo é o head agora
