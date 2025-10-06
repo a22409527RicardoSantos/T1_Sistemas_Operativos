@@ -39,13 +39,13 @@ pcb_t* dequeue_shortest_remaining(queue_t *q) {
     queue_elem_t *removed = remove_queue_elem(q, min_elem);
 
     // guarda o processo removido em *best
-    pcb_t *best = removed->pcb;
+    pcb_t *next = removed->pcb;
 
     // Liberto a memoria do no, quero devolver o processo, nao a estrututa
     free(removed);
 
     // Posso devolver a estrutura
-    return best;
+    return next;
 }
 
 void sjf_scheduler(uint32_t current_time_ms, queue_t *rq, pcb_t **cpu_task) {
@@ -58,11 +58,10 @@ void sjf_scheduler(uint32_t current_time_ms, queue_t *rq, pcb_t **cpu_task) {
         // O tempo de execuçao do processo é o seu tempo anterior mais o tempo que passou
         (*cpu_task)->ellapsed_time_ms += TICKS_MS;
 
-        // Se o tempo que o processo executou (ellapsed_time_ms) é >= ao tempo que precisava (time_ms)
-        // -> o processo terminou
+        // Se o processo terminou
         if ((*cpu_task)->ellapsed_time_ms >= (*cpu_task)->time_ms) {
 
-            // Crio mensagem para avisar que o processo terminou.
+            // Mensagem
             msg_t msg = {
                 .pid = (*cpu_task)->pid,
                 .request = PROCESS_REQUEST_DONE,
@@ -72,7 +71,7 @@ void sjf_scheduler(uint32_t current_time_ms, queue_t *rq, pcb_t **cpu_task) {
                 perror("write");
             }
 
-            // Posso libertar o processo porque já terminou
+            // Posso libertar o processo porque já terminou, cpu fica sem processo
             free((*cpu_task));
             (*cpu_task) = NULL;
         }

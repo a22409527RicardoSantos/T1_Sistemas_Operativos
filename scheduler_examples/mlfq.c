@@ -1,16 +1,13 @@
 #include "fifo.h"
-
 #include <stdio.h>
 #include <stdlib.h>
-
 #include "msg.h"
 #include <unistd.h>
 #include "config.h"
 
-
-
 uint32_t priority_boost_counter = 0;
 
+// Sobe todos os processos para prioridade maxima (0) e reseta slice timer
 void priority_boost(queue_t *rq) {
     if (!rq || !rq->head) {
         return;
@@ -23,6 +20,7 @@ void priority_boost(queue_t *rq) {
     }
 }
 
+// Verifica se existe outro processo na ready list com maior prioridade (basta encontrar o primeiro)
 int exists_higher_prio_task(pcb_t *running_task, queue_t *rq) {
     if (!rq || !rq->head || !running_task) return 0;
 
@@ -37,6 +35,7 @@ int exists_higher_prio_task(pcb_t *running_task, queue_t *rq) {
     return 0;
 }
 
+// Faz dequeue do primeiro elemento com prioridade mais alta
 pcb_t* dequeue_higher_priority_elem(queue_t *rq) {
     // Se a lista é null ou está vazia
     if (!rq || !rq->head) return NULL;
@@ -62,7 +61,7 @@ pcb_t* dequeue_higher_priority_elem(queue_t *rq) {
     // Depois de descobrir o primeiro maios prioritario removo-o da lista (função dada)
     queue_elem_t *removed = remove_queue_elem(rq, max_prio_elem);
 
-    // guarda o processo removido em *best
+    // guarda o processo removido em *next
     pcb_t *next = removed->pcb;
 
     // Liberto a memoria do no, quero devolver o processo, nao a estrututa
@@ -74,6 +73,7 @@ pcb_t* dequeue_higher_priority_elem(queue_t *rq) {
 
 
 void mlfq_scheduler(uint32_t current_time_ms, queue_t *rq, pcb_t **cpu_task) {
+
     // Incremento contador MLFQ_PRIORITY_BOOST_MS
     priority_boost_counter += TICKS_MS;
 
@@ -84,18 +84,17 @@ void mlfq_scheduler(uint32_t current_time_ms, queue_t *rq, pcb_t **cpu_task) {
             printf("Started at %d ms\n",(int)current_time_ms);
         }
 
-        // O tempo de execuçao do processo é o seu tempo anterior mais o tempo que passou
         (*cpu_task)->ellapsed_time_ms += TICKS_MS;
-        // Atualizo o tempo passado do time
         (*cpu_task)->slice_start_ms   += TICKS_MS;
-
 
 
         // Se processo terminou
         if ((*cpu_task)->ellapsed_time_ms >= (*cpu_task)->time_ms) {
+
             // Se ja acabou posso resetar o time_slice
             (*cpu_task)->slice_start_ms = 0;
-            // Crio mensagem para avisar que o processo terminou.
+
+            // Mensagem
             msg_t msg = {
                 .pid = (*cpu_task)->pid,
                 .request = PROCESS_REQUEST_DONE,
@@ -104,11 +103,10 @@ void mlfq_scheduler(uint32_t current_time_ms, queue_t *rq, pcb_t **cpu_task) {
             if (write((*cpu_task)->sockfd, &msg, sizeof(msg_t)) != sizeof(msg_t)) {
                 perror("write");
             }
-            // Posso libertar o processo porque já terminou
+
+            // Posso libertar o processo porque já terminou, cpu fica sem processo
             free((*cpu_task));
             (*cpu_task) = NULL;
-
-
 
             // Se esgotou o quantum
         } else if ((*cpu_task)->slice_start_ms >= prio_quantum((*cpu_task)->priority)) {
@@ -123,8 +121,9 @@ void mlfq_scheduler(uint32_t current_time_ms, queue_t *rq, pcb_t **cpu_task) {
         }
     }
 
-    // Se existe um processo com maior prioridade disponivel (falta condiçao)
+    // Se existe um processo com maior prioridade disponivel
     if (*cpu_task && exists_higher_prio_task(*cpu_task, rq)) {
+        // Pára tudo! que ha um melhor
         enqueue_pcb(rq, *cpu_task);
         *cpu_task = NULL;
     }

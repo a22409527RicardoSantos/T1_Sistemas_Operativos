@@ -1,11 +1,8 @@
 #include "fifo.h"
-
 #include <stdio.h>
 #include <stdlib.h>
-
 #include "msg.h"
 #include <unistd.h>
-#include "debug.h"
 
 void fifo_scheduler(uint32_t current_time_ms, queue_t *rq, pcb_t **cpu_task) {
 
